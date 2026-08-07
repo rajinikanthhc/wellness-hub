@@ -8,3 +8,7 @@ function doGet() {
 function include(file) {
   return HtmlService.createHtmlOutputFromFile(file).getContent();
 }
+
+function getYoga() {
+  return getYogaList();
+}

@@ -1,5 +1,87 @@
 <script>
 
-console.log("Wellness Hub Loaded");
+const quotes = [
+
+"Take care of your body. It's the only place you have to live.",
+
+"Health is wealth.",
+
+"Yoga is the journey of the self.",
+
+"A calm mind brings inner strength.",
+
+"Small daily habits create lasting health."
+
+];
+
+window.onload=function(){
+
+document.getElementById("dailyQuote").innerHTML=
+
+quotes[Math.floor(Math.random()*quotes.length)];
+
+}
+
+function showYoga(){
+
+    document.getElementById("homePage").style.display="none";
+
+    document.getElementById("yogaPage").style.display="block";
+
+    loadYoga();
+
+}
+
+function showHome(){
+
+document.getElementById("homePage").style.display="block";
+
+document.getElementById("yogaPage").style.display="none";
+
+}
+
+function loadYoga() {
+
+    google.script.run
+    .withSuccessHandler(showYogaCards)
+    .getYoga();
+
+}
+
+function showYogaCards(data){
+
+    let html="";
+
+    data.forEach(yoga=>{
+
+        html+=`
+
+        <div class="col-md-4 mb-4">
+
+            <div class="card card-menu h-100">
+
+                <div class="card-body">
+
+                    <h5>${yoga.name}</h5>
+
+                    <p>${yoga.category}</p>
+
+                    <p>${yoga.duration}</p>
+
+                    <span class="badge bg-success">${yoga.difficulty}</span>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        `;
+
+    });
+
+    document.getElementById("yogaContainer").innerHTML=html;
+
+}
 
 </script>
