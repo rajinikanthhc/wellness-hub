@@ -1,20 +1,67 @@
-<div id="yogaPage" style="display:none;">
+<div class="page">
 
-<div class="container py-4">
+  <div class="pageHeader">
 
-<button class="btn btn-success mb-4" onclick="showHome()">
-    <i class="bi bi-arrow-left"></i> Home
-</button>
+    <button class="backButton"
+            onclick="showPage('home')">
+      ← Home
+    </button>
 
-<h2 class="mb-4">
-    <i class="bi bi-flower1"></i>
-    Yoga Library
-</h2>
+    <h1>🧘 Yoga Library</h1>
 
-<div class="row" id="yogaContainer">
+    <button class="addButton"
+            onclick="openAddYoga()">
+      + Add
+    </button>
 
-</div>
+  </div>
 
-</div>
+
+  <!-- SEARCH & SORT -->
+
+  <div class="listTools">
+
+    <input
+      id="yogaSearch"
+      class="searchInput"
+      type="text"
+      placeholder="🔍 Search Yoga..."
+      oninput="filterYoga()"
+    >
+
+    <select
+      id="yogaSort"
+      class="sortSelect"
+      onchange="filterYoga()"
+    >
+
+      <option value="idAsc">
+        ID ↑
+      </option>
+
+      <option value="idDesc">
+        ID ↓
+      </option>
+
+      <option value="nameAsc">
+        Name A-Z
+      </option>
+
+      <option value="nameDesc">
+        Name Z-A
+      </option>
+
+    </select>
+
+  </div>
+
+
+  <div id="yogaList" class="cardGrid">
+
+    <div class="loading">
+      Loading Yoga...
+    </div>
+
+  </div>
 
 </div>

@@ -1,75 +1,647 @@
 <style>
 
-body{
+* {
+  box-sizing: border-box;
+}
 
-font-family:'Poppins',sans-serif;
 
-background:#F5F7F5;
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f4f7f5;
+  color: #111;
+}
+
+
+/* ================================
+   HOME
+================================ */
+
+.home {
+  min-height: 100vh;
+  padding-bottom: 40px;
+}
+
+
+.homeHeader {
+  background: #2e7d32;
+  color: white;
+  text-align: center;
+  padding: 35px 20px 45px;
+  border-radius: 0 0 30px 30px;
+}
+
+
+.logo {
+  font-size: 42px;
+}
+
+
+.homeHeader h1 {
+  margin: 5px 0;
+  font-size: 34px;
+}
+
+
+.homeHeader p {
+  margin: 10px 0 0;
+  font-size: 17px;
+}
+
+
+.homeCards {
+  max-width: 900px;
+  margin: 25px auto;
+  padding: 0 20px;
+
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 24px;
+}
+
+
+.homeCard {
+  background: white;
+  border-radius: 20px;
+  padding: 35px 20px;
+  text-align: center;
+  cursor: pointer;
+
+  box-shadow:
+    0 5px 20px rgba(0,0,0,0.08);
+
+  transition:
+    transform 0.2s,
+    box-shadow 0.2s;
+}
+
+
+.homeCard:hover {
+  transform: translateY(-4px);
+
+  box-shadow:
+    0 8px 25px rgba(0,0,0,0.12);
+}
+
+
+.cardIcon {
+  font-size: 50px;
+  margin-bottom: 15px;
+}
+
+
+.cardTitle {
+  font-size: 22px;
+  font-weight: bold;
+}
+
+
+.cardText {
+  margin-top: 8px;
+  color: #666;
+}
+
+
+/* ================================
+   PAGE
+================================ */
+
+.page {
+  max-width: 1200px;
+  margin: auto;
+  padding: 25px;
+}
+
+
+.pageHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 25px;
+}
+
+
+.pageHeader h1 {
+  flex: 1;
+  margin: 0;
+  font-size: 30px;
+}
+
+
+/* ================================
+   BUTTONS
+================================ */
+
+.backButton,
+.startButton,
+.addButton {
+  border: none;
+  border-radius: 10px;
+
+  padding: 11px 18px;
+
+  font-size: 15px;
+
+  cursor: pointer;
+
+  white-space: nowrap;
+}
+
+
+.backButton {
+  background: #198754;
+  color: white;
+}
+
+
+.startButton {
+  background: #2e7d32;
+  color: white;
+  font-weight: bold;
+}
+
+
+.addButton {
+  background: #198754;
+  color: white;
+  font-weight: bold;
+}
+
+
+.backButton:hover,
+.startButton:hover,
+.addButton:hover {
+  opacity: 0.9;
+}
+
+
+/* ================================
+   LIST
+================================ */
+
+.cardGrid {
+  display: grid;
+
+  grid-template-columns:
+    repeat(3, minmax(0, 1fr));
+
+  gap: 22px;
+}
+
+
+.itemCard {
+  position: relative;
+
+  background: white;
+
+  border-radius: 18px;
+
+  overflow: hidden;
+
+  box-shadow:
+    0 5px 18px rgba(0,0,0,0.08);
+}
+
+
+.itemImage {
+  width: 100%;
+  height: 210px;
+
+  background: #eef3ef;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+}
+
+
+.itemImage img {
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+}
+
+
+.noImage {
+  font-size: 60px;
+}
+
+
+.itemInfo {
+  padding: 18px;
+}
+
+
+.itemId {
+  font-size: 12px;
+  color: #777;
+
+  margin-bottom: 6px;
+
+  font-weight: 600;
+}
+
+
+.itemInfo h2 {
+  margin: 0 0 10px;
+
+  font-size: 20px;
+}
+
+
+.duration {
+  color: #666;
+
+  font-size: 15px;
+}
+
+
+/* ================================
+   EDIT BUTTON
+================================ */
+
+.editButton {
+  position: absolute;
+
+  top: 12px;
+  right: 12px;
+
+  width: 38px;
+  height: 38px;
+
+  border: none;
+
+  border-radius: 50%;
+
+  background: white;
+
+  cursor: pointer;
+
+  font-size: 18px;
+
+  box-shadow:
+    0 2px 8px rgba(0,0,0,0.15);
+}
+
+
+.editButton:hover {
+  transform: scale(1.05);
+}
+
+
+/* ================================
+   MESSAGES
+================================ */
+
+.loading,
+.empty,
+.error {
+  text-align: center;
+
+  padding: 50px;
+
+  font-size: 18px;
+}
+
+
+.error {
+  color: #c62828;
+}
+
+
+/* ================================
+   EDITOR
+================================ */
+
+.editor {
+  max-width: 600px;
+
+  margin: 30px auto;
+
+  background: white;
+
+  padding: 30px;
+
+  border-radius: 18px;
+
+  box-shadow:
+    0 5px 20px rgba(0,0,0,0.08);
+}
+
+
+.editor label {
+  display: block;
+
+  margin-top: 18px;
+  margin-bottom: 7px;
+
+  font-weight: bold;
+}
+
+
+.editor input {
+  width: 100%;
+
+  padding: 12px;
+
+  border: 1px solid #ddd;
+
+  border-radius: 8px;
+
+  font-size: 16px;
+}
+
+
+.editor input:focus {
+  outline: none;
+
+  border-color: #198754;
+}
+
+
+/* ================================
+   ID
+================================ */
+
+.currentId {
+  font-size: 14px;
+
+  color: #666;
+
+  background: #f4f7f5;
+
+  padding: 10px;
+
+  border-radius: 8px;
+
+  margin-bottom: 15px;
+
+  font-weight: bold;
+}
+
+
+/* ================================
+   IMAGE PREVIEW
+================================ */
+
+.currentImage {
+  width: 100%;
+
+  height: 180px;
+
+  margin-top: 5px;
+
+  background: #eef3ef;
+
+  border-radius: 10px;
+
+  display: flex;
+
+  align-items: center;
+
+  justify-content: center;
+
+  overflow: hidden;
+}
+
+
+.imagePreview {
+  margin-top: 12px;
+
+  display: flex;
+
+  justify-content: center;
+}
+
+
+.previewImage {
+  max-width: 100%;
+
+  max-height: 180px;
+
+  border-radius: 10px;
+
+  object-fit: contain;
+}
+
+
+/* ================================
+   EDITOR BUTTONS
+================================ */
+
+.editorButtons {
+  display: flex;
+
+  gap: 12px;
+
+  margin-top: 25px;
+
+  flex-wrap: wrap;
+}
+
+
+.saveButton,
+.deleteButton,
+.cancelButton {
+  border: none;
+
+  padding: 12px 22px;
+
+  border-radius: 8px;
+
+  color: white;
+
+  cursor: pointer;
+
+  font-weight: bold;
+}
+
+
+.saveButton {
+  background: #198754;
+}
+
+
+.deleteButton {
+  background: #c62828;
+}
+
+
+.cancelButton {
+  background: #777;
+}
+
+
+.saveButton:hover,
+.deleteButton:hover,
+.cancelButton:hover {
+  opacity: 0.9;
+}
+
+
+/* ================================
+   UPLOAD STATUS
+================================ */
+
+.uploadStatus {
+  margin-top: 10px;
+
+  font-size: 14px;
+
+  color: #198754;
+}
+
+
+/* ================================
+   MOBILE
+================================ */
+
+@media (max-width: 700px) {
+
+  .homeCards {
+    grid-template-columns: 1fr;
+  }
+
+
+  .cardGrid {
+    grid-template-columns: 1fr;
+  }
+
+
+  .pageHeader {
+    flex-wrap: wrap;
+  }
+
+
+  .pageHeader h1 {
+    width: 100%;
+
+    order: 2;
+
+    flex: auto;
+
+    font-size: 25px;
+  }
+
+
+  .backButton {
+    order: 1;
+  }
+
+
+  .addButton {
+    order: 3;
+  }
+
+
+  .startButton {
+    order: 4;
+  }
+
+
+  .page {
+    padding: 15px;
+  }
+
+
+  .editor {
+    padding: 20px;
+  }
 
 }
 
-.header{
 
-background:#2E7D32;
+/* ================================
+   SMALL MOBILE
+================================ */
 
-padding:25px;
+@media (max-width: 450px) {
 
-text-align:center;
+  .homeHeader h1 {
+    font-size: 28px;
+  }
 
-color:white;
 
-border-radius:0 0 25px 25px;
+  .logo {
+    font-size: 36px;
+  }
 
-}
 
-.card-menu{
+  .pageHeader {
+    gap: 8px;
+  }
 
-border:none;
 
-border-radius:20px;
+  .backButton,
+  .startButton,
+  .addButton {
+    padding: 9px 12px;
 
-box-shadow:0 8px 20px rgba(0,0,0,.08);
-
-transition:.3s;
-
-cursor:pointer;
-
-}
-
-.card-menu:hover{
-
-transform:translateY(-8px);
-
-box-shadow:0 15px 30px rgba(0,0,0,.15);
+    font-size: 13px;
+  }
 
 }
 
-.icon{
+/* ================================
+   SEARCH & SORT
+================================ */
 
-font-size:60px;
+.listTools {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 22px;
+}
 
-color:#2E7D32;
+.searchInput {
+  flex: 1;
+
+  padding: 12px 15px;
+
+  border: 1px solid #ddd;
+
+  border-radius: 10px;
+
+  font-size: 16px;
+
+  background: white;
+}
+
+.sortSelect {
+  width: 150px;
+
+  padding: 12px;
+
+  border: 1px solid #ddd;
+
+  border-radius: 10px;
+
+  font-size: 15px;
+
+  background: white;
+
+  cursor: pointer;
+}
+
+.searchInput:focus,
+.sortSelect:focus {
+  outline: none;
+  border-color: #198754;
+}
+
+
+@media (max-width: 700px) {
+
+  .listTools {
+    flex-direction: column;
+  }
+
+  .sortSelect {
+    width: 100%;
+  }
 
 }
 
-.quote{
-
-background:white;
-
-margin-top:35px;
-
-padding:25px;
-
-border-radius:20px;
-
-box-shadow:0 8px 20px rgba(0,0,0,.08);
-
-}
-
-button{
-
-border-radius:10px!important;
-
-}
-
-</style>c
+</style>

@@ -1,0 +1,1614 @@
+<script>
+
+/* =================================
+   GLOBAL DATA
+================================= */
+
+window.currentYoga = [];
+
+window.currentExercises = [];
+
+
+/* =================================
+   SHOW PAGE
+================================= */
+
+function showPage(page) {
+
+  google.script.run
+
+    .withSuccessHandler(function(html) {
+
+      document.getElementById("app")
+        .innerHTML = html;
+
+
+      if (page === "yoga") {
+
+        loadYoga();
+
+      }
+
+
+      if (page === "exercise") {
+
+        loadExercises();
+
+      }
+
+    })
+
+    .withFailureHandler(function(error) {
+
+      document.getElementById("app")
+        .innerHTML =
+          "<div class='error'>" +
+          "Unable to open page.<br>" +
+          error.message +
+          "</div>";
+
+    })
+
+    .include(page);
+
+}
+
+
+/* =================================
+   LOAD YOGA
+================================= */
+
+function loadYoga() {
+
+  google.script.run
+
+    .withSuccessHandler(function(list) {
+
+      window.currentYoga =
+        list || [];
+
+
+      const container =
+        document.getElementById(
+          "yogaList"
+        );
+
+
+      if (!container) return;
+
+
+      if (
+        !list ||
+        list.length === 0
+      ) {
+
+        container.innerHTML =
+          "<div class='empty'>" +
+          "No yoga poses found." +
+          "</div>";
+
+        return;
+
+      }
+
+
+      container.innerHTML =
+
+        list.map(function(yoga) {
+
+          return `
+
+            <div class="itemCard">
+
+              <div class="itemImage">
+
+                ${
+                  yoga.image
+
+                  ? `
+                    <img
+                      src="${escapeHtml(yoga.image)}"
+                      alt="${escapeHtml(yoga.name)}"
+                    >
+                  `
+
+                  : `
+                    <div class="noImage">
+                      🧘
+                    </div>
+                  `
+                }
+
+              </div>
+
+
+              <div class="itemInfo">
+
+                <div class="itemId">
+                  ID: ${escapeHtml(yoga.id)}
+                </div>
+
+                <h2>
+                  ${escapeHtml(yoga.name)}
+                </h2>
+
+                <div class="duration">
+                  ⏱ ${escapeHtml(yoga.duration)}
+                </div>
+
+              </div>
+
+
+              <button
+                class="editButton"
+                onclick="editYoga('${escapeJs(yoga.id)}')"
+              >
+                ✏️
+              </button>
+
+            </div>
+
+          `;
+
+        }).join("");
+
+    })
+
+    .withFailureHandler(function(error) {
+
+      const container =
+        document.getElementById(
+          "yogaList"
+        );
+
+
+      if (container) {
+
+        container.innerHTML =
+          "<div class='error'>" +
+          "Unable to load Yoga.<br>" +
+          error.message +
+          "</div>";
+
+      }
+
+    })
+
+    .getYoga();
+
+}
+
+
+/* =================================
+   LOAD EXERCISES
+================================= */
+
+function loadExercises() {
+
+  google.script.run
+
+    .withSuccessHandler(function(list) {
+
+      window.currentExercises =
+        list || [];
+
+
+      const container =
+        document.getElementById(
+          "exerciseList"
+        );
+
+
+      if (!container) return;
+
+
+      if (
+        !list ||
+        list.length === 0
+      ) {
+
+        container.innerHTML =
+          "<div class='empty'>" +
+          "No exercises found." +
+          "</div>";
+
+        return;
+
+      }
+
+
+      container.innerHTML =
+
+        list.map(function(exercise) {
+
+          return `
+
+            <div class="itemCard">
+
+              <div class="itemImage">
+
+                ${
+                  exercise.image
+
+                  ? `
+                    <img
+                      src="${escapeHtml(exercise.image)}"
+                      alt="${escapeHtml(exercise.name)}"
+                    >
+                  `
+
+                  : `
+                    <div class="noImage">
+                      🏃
+                    </div>
+                  `
+                }
+
+              </div>
+
+
+              <div class="itemInfo">
+
+                <div class="itemId">
+                  ID: ${escapeHtml(exercise.id)}
+                </div>
+
+                <h2>
+                  ${escapeHtml(exercise.name)}
+                </h2>
+
+                <div class="duration">
+                  ⏱ ${escapeHtml(exercise.duration)}
+                </div>
+
+              </div>
+
+
+              <button
+                class="editButton"
+                onclick="editExercise('${escapeJs(exercise.id)}')"
+              >
+                ✏️
+              </button>
+
+            </div>
+
+          `;
+
+        }).join("");
+
+    })
+
+    .withFailureHandler(function(error) {
+
+      const container =
+        document.getElementById(
+          "exerciseList"
+        );
+
+
+      if (container) {
+
+        container.innerHTML =
+          "<div class='error'>" +
+          "Unable to load Exercises.<br>" +
+          error.message +
+          "</div>";
+
+      }
+
+    })
+
+    .getExercises();
+
+}
+
+/* =================================
+   FILTER & SORT YOGA
+================================= */
+
+function filterYoga() {
+
+  const search =
+    document
+      .getElementById("yogaSearch")
+      .value
+      .trim()
+      .toLowerCase();
+
+
+  const sort =
+    document
+      .getElementById("yogaSort")
+      .value;
+
+
+  let list =
+    (window.currentYoga || [])
+      .filter(function(item) {
+
+        return (
+          String(item.id)
+            .toLowerCase()
+            .includes(search)
+
+          ||
+
+          String(item.name)
+            .toLowerCase()
+            .includes(search)
+        );
+
+      });
+
+
+  list.sort(function(a, b) {
+
+    if (sort === "idAsc") {
+
+      return compareIds(a.id, b.id);
+
+    }
+
+    if (sort === "idDesc") {
+
+      return compareIds(b.id, a.id);
+
+    }
+
+    if (sort === "nameAsc") {
+
+      return String(a.name)
+        .localeCompare(
+          String(b.name)
+        );
+
+    }
+
+    if (sort === "nameDesc") {
+
+      return String(b.name)
+        .localeCompare(
+          String(a.name)
+        );
+
+    }
+
+  });
+
+
+  renderYogaList(list);
+
+}
+
+
+/* =================================
+   FILTER & SORT EXERCISES
+================================= */
+
+function filterExercises() {
+
+  const search =
+    document
+      .getElementById("exerciseSearch")
+      .value
+      .trim()
+      .toLowerCase();
+
+
+  const sort =
+    document
+      .getElementById("exerciseSort")
+      .value;
+
+
+  let list =
+    (window.currentExercises || [])
+      .filter(function(item) {
+
+        return (
+          String(item.id)
+            .toLowerCase()
+            .includes(search)
+
+          ||
+
+          String(item.name)
+            .toLowerCase()
+            .includes(search)
+        );
+
+      });
+
+
+  list.sort(function(a, b) {
+
+    if (sort === "idAsc") {
+
+      return compareIds(a.id, b.id);
+
+    }
+
+    if (sort === "idDesc") {
+
+      return compareIds(b.id, a.id);
+
+    }
+
+    if (sort === "nameAsc") {
+
+      return String(a.name)
+        .localeCompare(
+          String(b.name)
+        );
+
+    }
+
+    if (sort === "nameDesc") {
+
+      return String(b.name)
+        .localeCompare(
+          String(a.name)
+        );
+
+    }
+
+  });
+
+
+  renderExerciseList(list);
+
+}
+
+
+/* =================================
+   COMPARE IDS
+================================= */
+
+function compareIds(a, b) {
+
+  const numberA =
+    parseInt(
+      String(a).replace(/\D/g, ""),
+      10
+    ) || 0;
+
+
+  const numberB =
+    parseInt(
+      String(b).replace(/\D/g, ""),
+      10
+    ) || 0;
+
+
+  return numberA - numberB;
+
+}
+
+
+/* =================================
+   RENDER YOGA
+================================= */
+
+function renderYogaList(list) {
+
+  const container =
+    document.getElementById(
+      "yogaList"
+    );
+
+
+  if (!container) return;
+
+
+  if (!list || list.length === 0) {
+
+    container.innerHTML =
+      "<div class='empty'>" +
+      "No yoga poses found." +
+      "</div>";
+
+    return;
+
+  }
+
+
+  container.innerHTML =
+
+    list.map(function(yoga) {
+
+      return `
+
+        <div class="itemCard">
+
+          <div class="itemImage">
+
+            ${
+              yoga.image
+
+              ? `
+                <img
+                  src="${escapeHtml(yoga.image)}"
+                  alt="${escapeHtml(yoga.name)}"
+                >
+              `
+
+              : `
+                <div class="noImage">
+                  🧘
+                </div>
+              `
+            }
+
+          </div>
+
+
+          <div class="itemInfo">
+
+            <div class="itemId">
+              ID: ${escapeHtml(yoga.id)}
+            </div>
+
+            <h2>
+              ${escapeHtml(yoga.name)}
+            </h2>
+
+            <div class="duration">
+              ⏱ ${escapeHtml(yoga.duration)}
+            </div>
+
+          </div>
+
+
+          <button
+            class="editButton"
+            onclick="editYoga('${escapeJs(yoga.id)}')"
+          >
+            ✏️
+          </button>
+
+        </div>
+
+      `;
+
+    }).join("");
+
+}
+
+
+/* =================================
+   RENDER EXERCISES
+================================= */
+
+function renderExerciseList(list) {
+
+  const container =
+    document.getElementById(
+      "exerciseList"
+    );
+
+
+  if (!container) return;
+
+
+  if (!list || list.length === 0) {
+
+    container.innerHTML =
+      "<div class='empty'>" +
+      "No exercises found." +
+      "</div>";
+
+    return;
+
+  }
+
+
+  container.innerHTML =
+
+    list.map(function(exercise) {
+
+      return `
+
+        <div class="itemCard">
+
+          <div class="itemImage">
+
+            ${
+              exercise.image
+
+              ? `
+                <img
+                  src="${escapeHtml(exercise.image)}"
+                  alt="${escapeHtml(exercise.name)}"
+                >
+              `
+
+              : `
+                <div class="noImage">
+                  🏃
+                </div>
+              `
+            }
+
+          </div>
+
+
+          <div class="itemInfo">
+
+            <div class="itemId">
+              ID: ${escapeHtml(exercise.id)}
+            </div>
+
+            <h2>
+              ${escapeHtml(exercise.name)}
+            </h2>
+
+            <div class="duration">
+              ⏱ ${escapeHtml(exercise.duration)}
+            </div>
+
+          </div>
+
+
+          <button
+            class="editButton"
+            onclick="editExercise('${escapeJs(exercise.id)}')"
+          >
+            ✏️
+          </button>
+
+        </div>
+
+      `;
+
+    }).join("");
+
+}
+
+/* =================================
+   ADD YOGA
+================================= */
+
+function openAddYoga() {
+
+  openAdd("yoga");
+
+}
+
+
+/* =================================
+   ADD EXERCISE
+================================= */
+
+function openAddExercise() {
+
+  openAdd("exercise");
+
+}
+
+
+/* =================================
+   OPEN ADD
+================================= */
+
+function openAdd(type) {
+
+  const title =
+    type === "yoga"
+      ? "Add New Yoga"
+      : "Add New Exercise";
+
+
+  const icon =
+    type === "yoga"
+      ? "🧘"
+      : "🏃";
+
+
+  document.getElementById("app")
+    .innerHTML = `
+
+      <div class="page">
+
+        <div class="pageHeader">
+
+          <button
+            class="backButton"
+            onclick="showPage('${type}')"
+          >
+            ← Back
+          </button>
+
+
+          <h1>
+            ${icon} ${title}
+          </h1>
+
+        </div>
+
+
+        <div class="editor">
+
+          <label>
+            Name
+          </label>
+
+          <input
+            id="editName"
+            type="text"
+            placeholder="Enter name"
+          >
+
+
+          <label>
+            Duration
+          </label>
+
+          <input
+            id="editDuration"
+            type="text"
+            placeholder="Example: 60 sec"
+          >
+
+
+          <label>
+            Image
+          </label>
+
+          <input
+            id="imageFile"
+            type="file"
+            accept="image/*"
+            onchange="previewImage()"
+          >
+
+
+          <div
+            id="imagePreview"
+            class="imagePreview"
+          ></div>
+
+
+          <div
+            id="uploadStatus"
+            class="uploadStatus"
+          ></div>
+
+
+          <div class="editorButtons">
+
+            <button
+              class="saveButton"
+              onclick="addNewItem('${type}')"
+            >
+              + Add
+            </button>
+
+
+            <button
+              class="cancelButton"
+              onclick="showPage('${type}')"
+            >
+              Cancel
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    `;
+
+}
+
+
+/* =================================
+   PREVIEW IMAGE
+================================= */
+
+function previewImage() {
+
+  const input =
+    document.getElementById(
+      "imageFile"
+    );
+
+
+  const preview =
+    document.getElementById(
+      "imagePreview"
+    );
+
+
+  if (
+    !input ||
+    !input.files ||
+    !input.files[0]
+  ) {
+
+    preview.innerHTML = "";
+
+    return;
+
+  }
+
+
+  const reader =
+    new FileReader();
+
+
+  reader.onload =
+    function(event) {
+
+      preview.innerHTML =
+
+        `<img
+          src="${event.target.result}"
+          class="previewImage"
+        >`;
+
+    };
+
+
+  reader.readAsDataURL(
+    input.files[0]
+  );
+
+}
+
+
+/* =================================
+   ADD NEW ITEM
+================================= */
+
+function addNewItem(type) {
+
+  const name =
+    document.getElementById(
+      "editName"
+    ).value.trim();
+
+
+  const duration =
+    document.getElementById(
+      "editDuration"
+    ).value.trim();
+
+
+  const fileInput =
+    document.getElementById(
+      "imageFile"
+    );
+
+
+  if (!name) {
+
+    alert(
+      "Please enter a name."
+    );
+
+    return;
+
+  }
+
+
+  const status =
+    document.getElementById(
+      "uploadStatus"
+    );
+
+
+  status.innerText =
+    "Saving...";
+
+
+  if (
+    fileInput &&
+    fileInput.files &&
+    fileInput.files[0]
+  ) {
+
+    uploadSelectedImage(
+      type,
+      name,
+      fileInput.files[0],
+      function(fileName) {
+
+        saveNewRecord(
+          type,
+          name,
+          duration,
+          fileName
+        );
+
+      }
+    );
+
+  } else {
+
+    saveNewRecord(
+      type,
+      name,
+      duration,
+      ""
+    );
+
+  }
+
+}
+
+
+/* =================================
+   SAVE NEW RECORD
+================================= */
+
+function saveNewRecord(
+  type,
+  name,
+  duration,
+  image
+) {
+
+  google.script.run
+
+    .withSuccessHandler(function(id) {
+
+      alert(
+        "Added successfully.\nID: " +
+        id
+      );
+
+
+      showPage(type);
+
+    })
+
+    .withFailureHandler(function(error) {
+
+      alert(
+        error.message
+      );
+
+    })
+
+    .addItem(
+      type,
+      {
+
+        name:
+          name,
+
+        duration:
+          duration,
+
+        image:
+          image
+
+      }
+    );
+
+}
+
+
+/* =================================
+   EDIT YOGA
+================================= */
+
+function editYoga(id) {
+
+  openEditor(
+    "yoga",
+    id
+  );
+
+}
+
+
+/* =================================
+   EDIT EXERCISE
+================================= */
+
+function editExercise(id) {
+
+  openEditor(
+    "exercise",
+    id
+  );
+
+}
+
+
+/* =================================
+   OPEN EDITOR
+================================= */
+
+function openEditor(
+  type,
+  id
+) {
+
+  const list =
+    type === "yoga"
+      ? window.currentYoga
+      : window.currentExercises;
+
+
+  const item =
+    list.find(function(x) {
+
+      return (
+        String(x.id) ===
+        String(id)
+      );
+
+    });
+
+
+  if (!item) {
+
+    alert(
+      "Record not found."
+    );
+
+    return;
+
+  }
+
+
+  const title =
+    type === "yoga"
+      ? "Edit Yoga"
+      : "Edit Exercise";
+
+
+  const icon =
+    type === "yoga"
+      ? "🧘"
+      : "🏃";
+
+
+  document.getElementById("app")
+    .innerHTML = `
+
+      <div class="page">
+
+        <div class="pageHeader">
+
+          <button
+            class="backButton"
+            onclick="showPage('${type}')"
+          >
+            ← Back
+          </button>
+
+
+          <h1>
+            ${icon} ${title}
+          </h1>
+
+        </div>
+
+
+        <div class="editor">
+
+          <div class="currentId">
+            ID: ${escapeHtml(item.id)}
+          </div>
+
+
+          <label>
+            Name
+          </label>
+
+          <input
+            id="editName"
+            type="text"
+            value="${escapeHtml(item.name)}"
+          >
+
+
+          <label>
+            Duration
+          </label>
+
+          <input
+            id="editDuration"
+            type="text"
+            value="${escapeHtml(item.duration)}"
+          >
+
+
+          <label>
+            Current Image
+          </label>
+
+          <div class="currentImage">
+
+            ${
+              item.image
+
+              ? `
+                <img
+                  src="${escapeHtml(item.image)}"
+                  class="previewImage"
+                >
+              `
+
+              : `
+                <div class="noImage">
+                  ${icon}
+                </div>
+              `
+            }
+
+          </div>
+
+
+          <label>
+            Replace Image
+          </label>
+
+          <input
+            id="imageFile"
+            type="file"
+            accept="image/*"
+            onchange="previewImage()"
+          >
+
+
+          <div
+            id="imagePreview"
+            class="imagePreview"
+          ></div>
+
+
+          <div
+            id="uploadStatus"
+            class="uploadStatus"
+          ></div>
+
+
+          <div class="editorButtons">
+
+            <button
+              class="saveButton"
+              onclick="saveEdit(
+                '${type}',
+                '${escapeJs(item.id)}'
+              )"
+            >
+              Save
+            </button>
+
+
+            <button
+              class="deleteButton"
+              onclick="deleteRecord(
+                '${type}',
+                '${escapeJs(item.id)}'
+              )"
+            >
+              🗑️ Delete
+            </button>
+
+
+            <button
+              class="cancelButton"
+              onclick="showPage('${type}')"
+            >
+              Cancel
+            </button>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    `;
+
+}
+
+
+/* =================================
+   SAVE EDIT
+================================= */
+
+function saveEdit(
+  type,
+  id
+) {
+
+  const name =
+    document.getElementById(
+      "editName"
+    ).value.trim();
+
+
+  const duration =
+    document.getElementById(
+      "editDuration"
+    ).value.trim();
+
+
+  const fileInput =
+    document.getElementById(
+      "imageFile"
+    );
+
+
+  if (!name) {
+
+    alert(
+      "Please enter a name."
+    );
+
+    return;
+
+  }
+
+
+  const oldList =
+    type === "yoga"
+      ? window.currentYoga
+      : window.currentExercises;
+
+
+  const oldItem =
+    oldList.find(function(x) {
+
+      return (
+        String(x.id) ===
+        String(id)
+      );
+
+    });
+
+
+  const status =
+    document.getElementById(
+      "uploadStatus"
+    );
+
+
+  status.innerText =
+    "Saving...";
+
+
+  if (
+    fileInput &&
+    fileInput.files &&
+    fileInput.files[0]
+  ) {
+
+    uploadSelectedImage(
+      type,
+      name,
+      fileInput.files[0],
+      function(fileName) {
+
+        updateEditedRecord(
+          type,
+          id,
+          name,
+          duration,
+          fileName
+        );
+
+      }
+    );
+
+  } else {
+
+    /*
+       Keep current image.
+       Backend will convert old URL
+       to filename if necessary.
+    */
+
+    updateEditedRecord(
+      type,
+      id,
+      name,
+      duration,
+      oldItem
+        ? oldItem.image
+        : ""
+    );
+
+  }
+
+}
+
+
+/* =================================
+   UPDATE EDITED RECORD
+================================= */
+
+function updateEditedRecord(
+  type,
+  id,
+  name,
+  duration,
+  image
+) {
+
+  google.script.run
+
+    .withSuccessHandler(function() {
+
+      alert(
+        "Saved successfully."
+      );
+
+
+      showPage(type);
+
+    })
+
+    .withFailureHandler(function(error) {
+
+      alert(
+        error.message
+      );
+
+    })
+
+    .saveItem(
+      type,
+      {
+
+        id:
+          id,
+
+        name:
+          name,
+
+        duration:
+          duration,
+
+        image:
+          image
+
+      }
+    );
+
+}
+
+
+/* =================================
+   DELETE
+================================= */
+
+function deleteRecord(
+  type,
+  id
+) {
+
+  const passcode =
+    prompt(
+      "Enter passcode to delete:"
+    );
+
+
+  if (passcode === null) {
+
+    return;
+
+  }
+
+
+  if (!passcode) {
+
+    alert(
+      "Please enter passcode."
+    );
+
+    return;
+
+  }
+
+
+  google.script.run
+
+    .withSuccessHandler(function() {
+
+      alert(
+        "Deleted successfully."
+      );
+
+
+      showPage(type);
+
+    })
+
+    .withFailureHandler(function(error) {
+
+      alert(
+        error.message
+      );
+
+    })
+
+    .deleteItem(
+      type,
+      id,
+      passcode
+    );
+
+}
+
+
+/* =================================
+   UPLOAD IMAGE
+================================= */
+
+function uploadSelectedImage(
+  type,
+  name,
+  file,
+  callback
+) {
+
+  const status =
+    document.getElementById(
+      "uploadStatus"
+    );
+
+
+  if (status) {
+
+    status.innerText =
+      "Uploading image...";
+
+  }
+
+
+  const reader =
+    new FileReader();
+
+
+  reader.onload =
+    function(event) {
+
+      google.script.run
+
+        .withSuccessHandler(function(result) {
+
+          if (status) {
+
+            status.innerText =
+              "Image uploaded successfully.";
+
+          }
+
+
+          /*
+             IMPORTANT:
+             Return ONLY filename
+             to addItem/saveItem.
+          */
+
+          callback(
+            result.fileName
+          );
+
+        })
+
+        .withFailureHandler(function(error) {
+
+          if (status) {
+
+            status.innerText = "";
+
+          }
+
+
+          alert(
+            "Image upload failed:\n" +
+            error.message
+          );
+
+        })
+
+        .uploadImageToGitHub(
+
+          type,
+
+          name,
+
+          event.target.result,
+
+          file.type
+
+        );
+
+    };
+
+
+  reader.readAsDataURL(
+    file
+  );
+
+}
+
+
+/* =================================
+   ESCAPE HTML
+================================= */
+
+function escapeHtml(value) {
+
+  return String(
+    value || ""
+  )
+
+    .replace(
+      /&/g,
+      "&amp;"
+    )
+
+    .replace(
+      /</g,
+      "&lt;"
+    )
+
+    .replace(
+      />/g,
+      "&gt;"
+    )
+
+    .replace(
+      /"/g,
+      "&quot;"
+    )
+
+    .replace(
+      /'/g,
+      "&#039;"
+    );
+
+}
+
+
+/* =================================
+   ESCAPE JAVASCRIPT
+================================= */
+
+function escapeJs(value) {
+
+  return String(
+    value || ""
+  )
+
+    .replace(
+      /\\/g,
+      "\\\\"
+    )
+
+    .replace(
+      /'/g,
+      "\\'"
+    )
+
+    .replace(
+      /"/g,
+      '\\"'
+    );
+
+}
+
+
+/* =================================
+   START APP
+================================= */
+
+window.onload =
+  function() {
+
+    showPage("home");
+
+  };
+
+</script>

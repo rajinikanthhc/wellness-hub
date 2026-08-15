@@ -1,0 +1,67 @@
+<div class="page">
+
+  <div class="pageHeader">
+
+    <button class="backButton"
+            onclick="showPage('home')">
+      ← Home
+    </button>
+
+    <h1>🏃 Exercise Library</h1>
+
+    <button class="addButton"
+            onclick="openAddExercise()">
+      + Add
+    </button>
+
+  </div>
+
+
+  <!-- SEARCH & SORT -->
+
+  <div class="listTools">
+
+    <input
+      id="exerciseSearch"
+      class="searchInput"
+      type="text"
+      placeholder="🔍 Search Exercise..."
+      oninput="filterExercises()"
+    >
+
+    <select
+      id="exerciseSort"
+      class="sortSelect"
+      onchange="filterExercises()"
+    >
+
+      <option value="idAsc">
+        ID ↑
+      </option>
+
+      <option value="idDesc">
+        ID ↓
+      </option>
+
+      <option value="nameAsc">
+        Name A-Z
+      </option>
+
+      <option value="nameDesc">
+        Name Z-A
+      </option>
+
+    </select>
+
+  </div>
+
+
+  <div id="exerciseList" class="cardGrid">
+
+    <div class="loading">
+      Loading Exercises...
+    </div>
+
+  </div>
+
+</div>
