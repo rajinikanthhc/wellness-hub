@@ -1567,82 +1567,85 @@ function preloadWellnessPages() {
 function startRoutine(type) {
 
   stopWorkoutTimer();
-
   stopSessionTimer();
 
 
-  google.script.run
+  /* =================================
+     USE CACHED DATA
+  ================================= */
 
-    .withSuccessHandler(function(list) {
-
-      if (!list || list.length === 0) {
-
-        alert(
-          type === "yoga"
-            ? "No yoga poses available."
-            : "No exercises available."
-        );
-
-        return;
-
-      }
+  let list;
 
 
-      window.workout.type =
-        type;
+  if (type === "yoga") {
+
+    list = window.currentYoga || [];
+
+  } else {
+
+    list = window.currentExercises || [];
+
+  }
 
 
-      window.workout.items =
-        shuffleWorkoutItems(list);
+  /* =================================
+     CHECK DATA
+  ================================= */
 
+  if (!list || list.length === 0) {
 
-      window.workout.currentIndex =
-        0;
-
-
-      window.workout.currentItem =
-        null;
-
-
-      window.workout.stopped =
-        false;
-
-
-      window.workout.paused =
-        false;
-
-
-      window.workout.sessionSeconds =
-        0;
-
-
-      startSessionTimer();
-
-
-      showWorkoutScreen();
-
-
-      startNextWorkoutItem();
-
-    })
-
-    .withFailureHandler(function(error) {
-
-      alert(
-        "Unable to start workout.\n" +
-        error.message
-      );
-
-    })
-
-    [
+    alert(
       type === "yoga"
-        ? "getYoga"
-        : "getExercises"
-    ]();
+        ? "No yoga poses available."
+        : "No exercises available."
+    );
+
+    return;
+
+  }
+
+
+  /* =================================
+     START IMMEDIATELY
+  ================================= */
+
+  window.workout.type =
+    type;
+
+
+  window.workout.items =
+    shuffleWorkoutItems(list);
+
+
+  window.workout.currentIndex =
+    0;
+
+
+  window.workout.currentItem =
+    null;
+
+
+  window.workout.stopped =
+    false;
+
+
+  window.workout.paused =
+    false;
+
+
+  window.workout.sessionSeconds =
+    0;
+
+
+  startSessionTimer();
+
+
+  showWorkoutScreen();
+
+
+  startNextWorkoutItem();
 
 }
-
 
 /* =================================
    RANDOM ORDER
