@@ -873,4 +873,78 @@ body {
 
 }
 
+/* =================================
+   WORKOUT CONTROLS
+================================= */
+
+.workoutControlsTop {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 15px;
+}
+
+.voiceButton,
+.pauseWorkoutButton,
+.skipWorkoutButton,
+.stopWorkoutButton {
+  border: none;
+  border-radius: 10px;
+  padding: 12px 20px;
+  font-size: 15px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.voiceButton {
+  background: #198754;
+  color: white;
+}
+
+.pauseWorkoutButton {
+  background: #e0a800;
+  color: white;
+}
+
+.skipWorkoutButton {
+  background: #777;
+  color: white;
+}
+
+.stopWorkoutButton {
+  background: #c62828;
+  color: white;
+}
+
+.workoutActionButtons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.sessionTimerDisplay {
+  background: white;
+  color: #198754;
+  padding: 9px 14px;
+  border-radius: 10px;
+  font-weight: bold;
+  white-space: nowrap;
+}
+
+@media (max-width: 600px) {
+
+  .workoutActionButtons {
+    flex-direction: column;
+  }
+
+  .voiceButton,
+  .pauseWorkoutButton,
+  .skipWorkoutButton,
+  .stopWorkoutButton {
+    width: 100%;
+  }
+
+}
+
 </style>

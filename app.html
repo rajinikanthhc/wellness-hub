@@ -10,6 +10,37 @@ window.currentExercises = [];
 
 
 /* =================================
+   WORKOUT VARIABLES
+================================= */
+
+window.workout = {
+
+  type: "",
+
+  items: [],
+
+  currentIndex: 0,
+
+  currentItem: null,
+
+  timer: null,
+
+  remaining: 0,
+
+  stopped: false,
+
+  paused: false,
+
+  sessionTimer: null,
+
+  sessionSeconds: 0,
+
+  voiceEnabled: true
+
+};
+
+
+/* =================================
    SHOW PAGE
 ================================= */
 
@@ -69,18 +100,13 @@ function loadYoga() {
 
 
       const container =
-        document.getElementById(
-          "yogaList"
-        );
+        document.getElementById("yogaList");
 
 
       if (!container) return;
 
 
-      if (
-        !list ||
-        list.length === 0
-      ) {
+      if (!list || list.length === 0) {
 
         container.innerHTML =
           "<div class='empty'>" +
@@ -92,74 +118,14 @@ function loadYoga() {
       }
 
 
-      container.innerHTML =
-
-        list.map(function(yoga) {
-
-          return `
-
-            <div class="itemCard">
-
-              <div class="itemImage">
-
-                ${
-                  yoga.image
-
-                  ? `
-                    <img
-                      src="${escapeHtml(yoga.image)}"
-                      alt="${escapeHtml(yoga.name)}"
-                    >
-                  `
-
-                  : `
-                    <div class="noImage">
-                      🧘
-                    </div>
-                  `
-                }
-
-              </div>
-
-
-              <div class="itemInfo">
-
-                <div class="itemId">
-                  ID: ${escapeHtml(yoga.id)}
-                </div>
-
-                <h2>
-                  ${escapeHtml(yoga.name)}
-                </h2>
-
-                <div class="duration">
-                  ⏱ ${escapeHtml(yoga.duration)}
-                </div>
-
-              </div>
-
-
-              <button
-                class="editButton"
-                onclick="editYoga('${escapeJs(yoga.id)}')"
-              >
-                ✏️
-              </button>
-
-            </div>
-
-          `;
-
-        }).join("");
+      renderYogaList(list);
 
     })
 
     .withFailureHandler(function(error) {
 
       const container =
-        document.getElementById(
-          "yogaList"
-        );
+        document.getElementById("yogaList");
 
 
       if (container) {
@@ -194,18 +160,13 @@ function loadExercises() {
 
 
       const container =
-        document.getElementById(
-          "exerciseList"
-        );
+        document.getElementById("exerciseList");
 
 
       if (!container) return;
 
 
-      if (
-        !list ||
-        list.length === 0
-      ) {
+      if (!list || list.length === 0) {
 
         container.innerHTML =
           "<div class='empty'>" +
@@ -217,74 +178,14 @@ function loadExercises() {
       }
 
 
-      container.innerHTML =
-
-        list.map(function(exercise) {
-
-          return `
-
-            <div class="itemCard">
-
-              <div class="itemImage">
-
-                ${
-                  exercise.image
-
-                  ? `
-                    <img
-                      src="${escapeHtml(exercise.image)}"
-                      alt="${escapeHtml(exercise.name)}"
-                    >
-                  `
-
-                  : `
-                    <div class="noImage">
-                      🏃
-                    </div>
-                  `
-                }
-
-              </div>
-
-
-              <div class="itemInfo">
-
-                <div class="itemId">
-                  ID: ${escapeHtml(exercise.id)}
-                </div>
-
-                <h2>
-                  ${escapeHtml(exercise.name)}
-                </h2>
-
-                <div class="duration">
-                  ⏱ ${escapeHtml(exercise.duration)}
-                </div>
-
-              </div>
-
-
-              <button
-                class="editButton"
-                onclick="editExercise('${escapeJs(exercise.id)}')"
-              >
-                ✏️
-              </button>
-
-            </div>
-
-          `;
-
-        }).join("");
+      renderExerciseList(list);
 
     })
 
     .withFailureHandler(function(error) {
 
       const container =
-        document.getElementById(
-          "exerciseList"
-        );
+        document.getElementById("exerciseList");
 
 
       if (container) {
@@ -302,6 +203,7 @@ function loadExercises() {
     .getExercises();
 
 }
+
 
 /* =================================
    FILTER & SORT YOGA
@@ -328,6 +230,7 @@ function filterYoga() {
       .filter(function(item) {
 
         return (
+
           String(item.id)
             .toLowerCase()
             .includes(search)
@@ -337,6 +240,7 @@ function filterYoga() {
           String(item.name)
             .toLowerCase()
             .includes(search)
+
         );
 
       });
@@ -350,29 +254,31 @@ function filterYoga() {
 
     }
 
+
     if (sort === "idDesc") {
 
       return compareIds(b.id, a.id);
 
     }
 
+
     if (sort === "nameAsc") {
 
       return String(a.name)
-        .localeCompare(
-          String(b.name)
-        );
+        .localeCompare(String(b.name));
 
     }
+
 
     if (sort === "nameDesc") {
 
       return String(b.name)
-        .localeCompare(
-          String(a.name)
-        );
+        .localeCompare(String(a.name));
 
     }
+
+
+    return 0;
 
   });
 
@@ -407,6 +313,7 @@ function filterExercises() {
       .filter(function(item) {
 
         return (
+
           String(item.id)
             .toLowerCase()
             .includes(search)
@@ -416,6 +323,7 @@ function filterExercises() {
           String(item.name)
             .toLowerCase()
             .includes(search)
+
         );
 
       });
@@ -429,29 +337,31 @@ function filterExercises() {
 
     }
 
+
     if (sort === "idDesc") {
 
       return compareIds(b.id, a.id);
 
     }
 
+
     if (sort === "nameAsc") {
 
       return String(a.name)
-        .localeCompare(
-          String(b.name)
-        );
+        .localeCompare(String(b.name));
 
     }
+
 
     if (sort === "nameDesc") {
 
       return String(b.name)
-        .localeCompare(
-          String(a.name)
-        );
+        .localeCompare(String(a.name));
 
     }
+
+
+    return 0;
 
   });
 
@@ -493,9 +403,7 @@ function compareIds(a, b) {
 function renderYogaList(list) {
 
   const container =
-    document.getElementById(
-      "yogaList"
-    );
+    document.getElementById("yogaList");
 
 
   if (!container) return;
@@ -583,9 +491,7 @@ function renderYogaList(list) {
 function renderExerciseList(list) {
 
   const container =
-    document.getElementById(
-      "exerciseList"
-    );
+    document.getElementById("exerciseList");
 
 
   if (!container) return;
@@ -664,6 +570,7 @@ function renderExerciseList(list) {
     }).join("");
 
 }
+
 
 /* =================================
    ADD YOGA
@@ -810,15 +717,11 @@ function openAdd(type) {
 function previewImage() {
 
   const input =
-    document.getElementById(
-      "imageFile"
-    );
+    document.getElementById("imageFile");
 
 
   const preview =
-    document.getElementById(
-      "imagePreview"
-    );
+    document.getElementById("imagePreview");
 
 
   if (
@@ -851,9 +754,7 @@ function previewImage() {
     };
 
 
-  reader.readAsDataURL(
-    input.files[0]
-  );
+  reader.readAsDataURL(input.files[0]);
 
 }
 
@@ -865,28 +766,26 @@ function previewImage() {
 function addNewItem(type) {
 
   const name =
-    document.getElementById(
-      "editName"
-    ).value.trim();
+    document
+      .getElementById("editName")
+      .value
+      .trim();
 
 
   const duration =
-    document.getElementById(
-      "editDuration"
-    ).value.trim();
+    document
+      .getElementById("editDuration")
+      .value
+      .trim();
 
 
   const fileInput =
-    document.getElementById(
-      "imageFile"
-    );
+    document.getElementById("imageFile");
 
 
   if (!name) {
 
-    alert(
-      "Please enter a name."
-    );
+    alert("Please enter a name.");
 
     return;
 
@@ -894,9 +793,7 @@ function addNewItem(type) {
 
 
   const status =
-    document.getElementById(
-      "uploadStatus"
-    );
+    document.getElementById("uploadStatus");
 
 
   status.innerText =
@@ -966,25 +863,16 @@ function saveNewRecord(
 
     .withFailureHandler(function(error) {
 
-      alert(
-        error.message
-      );
+      alert(error.message);
 
     })
 
     .addItem(
       type,
       {
-
-        name:
-          name,
-
-        duration:
-          duration,
-
-        image:
-          image
-
+        name: name,
+        duration: duration,
+        image: image
       }
     );
 
@@ -997,10 +885,7 @@ function saveNewRecord(
 
 function editYoga(id) {
 
-  openEditor(
-    "yoga",
-    id
-  );
+  openEditor("yoga", id);
 
 }
 
@@ -1011,10 +896,7 @@ function editYoga(id) {
 
 function editExercise(id) {
 
-  openEditor(
-    "exercise",
-    id
-  );
+  openEditor("exercise", id);
 
 }
 
@@ -1023,10 +905,7 @@ function editExercise(id) {
    OPEN EDITOR
 ================================= */
 
-function openEditor(
-  type,
-  id
-) {
+function openEditor(type, id) {
 
   const list =
     type === "yoga"
@@ -1047,9 +926,7 @@ function openEditor(
 
   if (!item) {
 
-    alert(
-      "Record not found."
-    );
+    alert("Record not found.");
 
     return;
 
@@ -1215,34 +1092,29 @@ function openEditor(
    SAVE EDIT
 ================================= */
 
-function saveEdit(
-  type,
-  id
-) {
+function saveEdit(type, id) {
 
   const name =
-    document.getElementById(
-      "editName"
-    ).value.trim();
+    document
+      .getElementById("editName")
+      .value
+      .trim();
 
 
   const duration =
-    document.getElementById(
-      "editDuration"
-    ).value.trim();
+    document
+      .getElementById("editDuration")
+      .value
+      .trim();
 
 
   const fileInput =
-    document.getElementById(
-      "imageFile"
-    );
+    document.getElementById("imageFile");
 
 
   if (!name) {
 
-    alert(
-      "Please enter a name."
-    );
+    alert("Please enter a name.");
 
     return;
 
@@ -1267,9 +1139,7 @@ function saveEdit(
 
 
   const status =
-    document.getElementById(
-      "uploadStatus"
-    );
+    document.getElementById("uploadStatus");
 
 
   status.innerText =
@@ -1300,12 +1170,6 @@ function saveEdit(
     );
 
   } else {
-
-    /*
-       Keep current image.
-       Backend will convert old URL
-       to filename if necessary.
-    */
 
     updateEditedRecord(
       type,
@@ -1338,10 +1202,7 @@ function updateEditedRecord(
 
     .withSuccessHandler(function() {
 
-      alert(
-        "Saved successfully."
-      );
-
+      alert("Saved successfully.");
 
       showPage(type);
 
@@ -1349,28 +1210,17 @@ function updateEditedRecord(
 
     .withFailureHandler(function(error) {
 
-      alert(
-        error.message
-      );
+      alert(error.message);
 
     })
 
     .saveItem(
       type,
       {
-
-        id:
-          id,
-
-        name:
-          name,
-
-        duration:
-          duration,
-
-        image:
-          image
-
+        id: id,
+        name: name,
+        duration: duration,
+        image: image
       }
     );
 
@@ -1381,10 +1231,7 @@ function updateEditedRecord(
    DELETE
 ================================= */
 
-function deleteRecord(
-  type,
-  id
-) {
+function deleteRecord(type, id) {
 
   const passcode =
     prompt(
@@ -1414,10 +1261,7 @@ function deleteRecord(
 
     .withSuccessHandler(function() {
 
-      alert(
-        "Deleted successfully."
-      );
-
+      alert("Deleted successfully.");
 
       showPage(type);
 
@@ -1425,9 +1269,7 @@ function deleteRecord(
 
     .withFailureHandler(function(error) {
 
-      alert(
-        error.message
-      );
+      alert(error.message);
 
     })
 
@@ -1484,12 +1326,6 @@ function uploadSelectedImage(
           }
 
 
-          /*
-             IMPORTANT:
-             Return ONLY filename
-             to addItem/saveItem.
-          */
-
           callback(
             result.fileName
           );
@@ -1513,23 +1349,16 @@ function uploadSelectedImage(
         })
 
         .uploadImageToGitHub(
-
           type,
-
           name,
-
           event.target.result,
-
           file.type
-
         );
 
     };
 
 
-  reader.readAsDataURL(
-    file
-  );
+  reader.readAsDataURL(file);
 
 }
 
@@ -1540,34 +1369,17 @@ function uploadSelectedImage(
 
 function escapeHtml(value) {
 
-  return String(
-    value || ""
-  )
+  return String(value || "")
 
-    .replace(
-      /&/g,
-      "&amp;"
-    )
+    .replace(/&/g, "&amp;")
 
-    .replace(
-      /</g,
-      "&lt;"
-    )
+    .replace(/</g, "&lt;")
 
-    .replace(
-      />/g,
-      "&gt;"
-    )
+    .replace(/>/g, "&gt;")
 
-    .replace(
-      /"/g,
-      "&quot;"
-    )
+    .replace(/"/g, "&quot;")
 
-    .replace(
-      /'/g,
-      "&#039;"
-    );
+    .replace(/'/g, "&#039;");
 
 }
 
@@ -1578,24 +1390,13 @@ function escapeHtml(value) {
 
 function escapeJs(value) {
 
-  return String(
-    value || ""
-  )
+  return String(value || "")
 
-    .replace(
-      /\\/g,
-      "\\\\"
-    )
+    .replace(/\\/g, "\\\\")
 
-    .replace(
-      /'/g,
-      "\\'"
-    )
+    .replace(/'/g, "\\'")
 
-    .replace(
-      /"/g,
-      '\\"'
-    );
+    .replace(/"/g, '\\"');
 
 }
 
@@ -1611,31 +1412,6 @@ window.onload =
 
   };
 
-  /* =================================
-   WORKOUT VARIABLES
-================================= */
-
-window.workout = {
-
-  type: "",
-
-  items: [],
-
-  currentIndex: 0,
-
-  currentItem: null,
-
-  timer: null,
-
-  remaining: 0,
-
-  stopped: false,
-
-  sessionTimer: null,
-
-  sessionSeconds: 0
-
-};
 
 /* =================================
    START ROUTINE
@@ -1645,14 +1421,11 @@ function startRoutine(type) {
 
   stopWorkoutTimer();
 
-
-  const runner =
-    type === "yoga"
-      ? google.script.run
-      : google.script.run;
+  stopSessionTimer();
 
 
-  runner
+  google.script.run
+
     .withSuccessHandler(function(list) {
 
       if (!list || list.length === 0) {
@@ -1668,33 +1441,44 @@ function startRoutine(type) {
       }
 
 
-      window.workout.type = type;
+      window.workout.type =
+        type;
 
-      /*
-       * Random order.
-       * Each item appears once before
-       * the list starts again.
-       */
 
       window.workout.items =
         shuffleWorkoutItems(list);
 
-      window.workout.currentIndex = 0;
 
-      window.workout.currentItem = null;
+      window.workout.currentIndex =
+        0;
 
-      window.workout.stopped = false;
 
-      window.workout.sessionSeconds = 0;
+      window.workout.currentItem =
+        null;
+
+
+      window.workout.stopped =
+        false;
+
+
+      window.workout.paused =
+        false;
+
+
+      window.workout.sessionSeconds =
+        0;
+
 
       startSessionTimer();
 
 
       showWorkoutScreen();
 
+
       startNextWorkoutItem();
 
     })
+
     .withFailureHandler(function(error) {
 
       alert(
@@ -1702,7 +1486,9 @@ function startRoutine(type) {
         error.message
       );
 
-    })[
+    })
+
+    [
       type === "yoga"
         ? "getYoga"
         : "getExercises"
@@ -1736,8 +1522,10 @@ function shuffleWorkoutItems(list) {
     const temp =
       result[i];
 
+
     result[i] =
       result[j];
+
 
     result[j] =
       temp;
@@ -1769,29 +1557,48 @@ function showWorkoutScreen() {
 
         <div class="workoutHeader">
 
-  <button
-    class="backButton"
-    onclick="stopWorkout()">
+          <button
+            class="backButton"
+            onclick="stopWorkout()"
+          >
+            ← Stop
+          </button>
 
-    ← Stop
 
-  </button>
+          <h1>
+            ${title}
+          </h1>
 
-  <h1>
-    ${title}
-  </h1>
 
-  <div class="sessionTimerDisplay">
-    ⏱ <span id="sessionTimer">00:00</span>
-  </div>
+          <div class="sessionTimerDisplay">
+            ⏱
+            <span id="sessionTimer">
+              00:00
+            </span>
+          </div>
 
-</div>
+        </div>
+
+
+        <div
+          class="workoutControlsTop"
+        >
+
+          <button
+            id="voiceButton"
+            class="voiceButton"
+            onclick="toggleVoice()"
+          >
+            🔊 Voice ON
+          </button>
+
+        </div>
+
 
         <div
           id="workoutFrame"
-          class="workoutFrame">
-
-        </div>
+          class="workoutFrame"
+        ></div>
 
       </div>
 
@@ -1810,14 +1617,15 @@ function startNextWorkoutItem() {
 
 
   if (window.workout.stopped) {
+
     return;
+
   }
 
 
-  /*
-   * When all items are completed,
-   * reshuffle and continue.
-   */
+  window.workout.paused =
+    false;
+
 
   if (
     window.workout.currentIndex >=
@@ -1829,7 +1637,9 @@ function startNextWorkoutItem() {
         window.workout.items
       );
 
-    window.workout.currentIndex = 0;
+
+    window.workout.currentIndex =
+      0;
 
   }
 
@@ -1868,7 +1678,15 @@ function startNextWorkoutItem() {
   window.workout.timer =
     setInterval(function() {
 
+      if (window.workout.paused) {
+
+        return;
+
+      }
+
+
       window.workout.remaining--;
+
 
       updateWorkoutTimer();
 
@@ -1890,7 +1708,10 @@ function startNextWorkoutItem() {
    DISPLAY ITEM
 ================================= */
 
-function renderWorkoutItem(item, seconds) {
+function renderWorkoutItem(
+  item,
+  seconds
+) {
 
   const frame =
     document.getElementById(
@@ -1949,57 +1770,62 @@ function renderWorkoutItem(item, seconds) {
 
     <div
       class="workoutStatus"
-      id="workoutStatus">
-
+      id="workoutStatus"
+    >
       START
-
     </div>
 
 
     <div
       class="workoutTimer"
-      id="workoutTimer">
-
+      id="workoutTimer"
+    >
       ${formatWorkoutTime(seconds)}
-
     </div>
 
 
     <div class="workoutProgress">
 
-  ${
-    window.workout.currentIndex + 1
-  }
+      ${
+        window.workout.currentIndex + 1
+      }
 
-  /
+      /
 
-  ${
-    window.workout.items.length
-  }
+      ${
+        window.workout.items.length
+      }
 
-</div>
-
-
-<div class="workoutActionButtons">
-
-  <button
-    class="skipWorkoutButton"
-    onclick="skipWorkout()">
-
-    ⏭ SKIP
-
-  </button>
+    </div>
 
 
-  <button
-    class="stopWorkoutButton"
-    onclick="stopWorkout()">
+    <div class="workoutActionButtons">
 
-    ■ STOP
+      <button
+        id="pauseButton"
+        class="pauseWorkoutButton"
+        onclick="togglePauseWorkout()"
+      >
+        ⏸ PAUSE
+      </button>
 
-  </button>
 
-</div>
+      <button
+        class="skipWorkoutButton"
+        onclick="skipWorkout()"
+      >
+        ⏭ SKIP
+      </button>
+
+
+      <button
+        class="stopWorkoutButton"
+        onclick="stopWorkout()"
+      >
+        ■ STOP
+      </button>
+
+    </div>
 
   `;
 
@@ -2007,7 +1833,7 @@ function renderWorkoutItem(item, seconds) {
 
 
 /* =================================
-   UPDATE TIMER
+   UPDATE WORKOUT TIMER
 ================================= */
 
 function updateWorkoutTimer() {
@@ -2065,10 +1891,6 @@ function finishWorkoutItem() {
   );
 
 
-  /*
-   * 10 second rest
-   */
-
   showWorkoutRest();
 
 }
@@ -2081,8 +1903,14 @@ function finishWorkoutItem() {
 function showWorkoutRest() {
 
   if (window.workout.stopped) {
+
     return;
+
   }
+
+
+  window.workout.paused =
+    false;
 
 
   let seconds = 10;
@@ -2118,20 +1946,39 @@ function showWorkoutRest() {
 
       <div
         id="restTimer"
-        class="restTimer">
-
+        class="restTimer"
+      >
         10
-
       </div>
 
 
-      <button
-        class="stopWorkoutButton"
-        onclick="stopWorkout()">
+      <div class="workoutActionButtons">
 
-        ■ STOP
+        <button
+          id="pauseButton"
+          class="pauseWorkoutButton"
+          onclick="togglePauseWorkout()"
+        >
+          ⏸ PAUSE
+        </button>
 
-      </button>
+
+        <button
+          class="skipWorkoutButton"
+          onclick="skipWorkout()"
+        >
+          ⏭ SKIP
+        </button>
+
+
+        <button
+          class="stopWorkoutButton"
+          onclick="stopWorkout()"
+        >
+          ■ STOP
+        </button>
+
+      </div>
 
     </div>
 
@@ -2145,6 +1992,13 @@ function showWorkoutRest() {
 
   window.workout.timer =
     setInterval(function() {
+
+      if (window.workout.paused) {
+
+        return;
+
+      }
+
 
       seconds--;
 
@@ -2181,16 +2035,196 @@ function showWorkoutRest() {
 
 
 /* =================================
-   STOP
+   PAUSE / RESUME
+================================= */
+
+function togglePauseWorkout() {
+
+  if (window.workout.stopped) {
+
+    return;
+
+  }
+
+
+  window.workout.paused =
+    !window.workout.paused;
+
+
+  const pauseButton =
+    document.getElementById(
+      "pauseButton"
+    );
+
+
+  const status =
+    document.getElementById(
+      "workoutStatus"
+    );
+
+
+  if (window.workout.paused) {
+
+    if (
+      "speechSynthesis" in window
+    ) {
+
+      window.speechSynthesis.pause();
+
+    }
+
+
+    if (pauseButton) {
+
+      pauseButton.innerText =
+        "▶ RESUME";
+
+    }
+
+
+    if (status) {
+
+      status.innerText =
+        "PAUSED";
+
+    }
+
+  } else {
+
+    if (
+      "speechSynthesis" in window
+    ) {
+
+      window.speechSynthesis.resume();
+
+    }
+
+
+    if (pauseButton) {
+
+      pauseButton.innerText =
+        "⏸ PAUSE";
+
+    }
+
+
+    if (status) {
+
+      status.innerText =
+        "START";
+
+    }
+
+  }
+
+}
+
+
+/* =================================
+   VOICE CONTROL
+================================= */
+
+function toggleVoice() {
+
+  window.workout.voiceEnabled =
+    !window.workout.voiceEnabled;
+
+
+  const button =
+    document.getElementById(
+      "voiceButton"
+    );
+
+
+  if (
+    !window.workout.voiceEnabled
+  ) {
+
+    if (
+      "speechSynthesis" in window
+    ) {
+
+      window.speechSynthesis.cancel();
+
+    }
+
+
+    if (button) {
+
+      button.innerText =
+        "🔇 Voice OFF";
+
+    }
+
+  } else {
+
+    if (button) {
+
+      button.innerText =
+        "🔊 Voice ON";
+
+    }
+
+  }
+
+}
+
+
+/* =================================
+   SKIP
+================================= */
+
+function skipWorkout() {
+
+  if (window.workout.stopped) {
+
+    return;
+
+  }
+
+
+  stopWorkoutTimer();
+
+
+  window.workout.paused =
+    false;
+
+
+  const item =
+    window.workout.currentItem;
+
+
+  if (item) {
+
+    speak(
+      item.name + ". Skipped."
+    );
+
+  }
+
+
+  showWorkoutRest();
+
+}
+
+
+/* =================================
+   STOP WORKOUT
 ================================= */
 
 function stopWorkout() {
 
   stopWorkoutTimer();
 
+  stopSessionTimer();
+
 
   window.workout.stopped =
     true;
+
+
+  window.workout.paused =
+    false;
 
 
   window.workout.currentItem =
@@ -2212,7 +2246,7 @@ function stopWorkout() {
 
 
 /* =================================
-   STOP TIMER
+   STOP WORKOUT TIMER
 ================================= */
 
 function stopWorkoutTimer() {
@@ -2224,6 +2258,80 @@ function stopWorkoutTimer() {
     );
 
     window.workout.timer =
+      null;
+
+  }
+
+}
+
+
+/* =================================
+   SESSION TIMER
+================================= */
+
+function startSessionTimer() {
+
+  stopSessionTimer();
+
+
+  window.workout.sessionSeconds =
+    0;
+
+
+  updateSessionTimer();
+
+
+  window.workout.sessionTimer =
+    setInterval(function() {
+
+      if (window.workout.paused) {
+
+        return;
+
+      }
+
+
+      window.workout.sessionSeconds++;
+
+
+      updateSessionTimer();
+
+    }, 1000);
+
+}
+
+
+function updateSessionTimer() {
+
+  const element =
+    document.getElementById(
+      "sessionTimer"
+    );
+
+
+  if (!element) return;
+
+
+  element.innerText =
+    formatWorkoutTime(
+      window.workout.sessionSeconds
+    );
+
+}
+
+
+function stopSessionTimer() {
+
+  if (
+    window.workout.sessionTimer
+  ) {
+
+    clearInterval(
+      window.workout.sessionTimer
+    );
+
+
+    window.workout.sessionTimer =
       null;
 
   }
@@ -2298,9 +2406,19 @@ function formatWorkoutTime(seconds) {
 
 
   return (
-    String(minutes).padStart(2, "0") +
-    ":" +
-    String(secs).padStart(2, "0")
+
+    String(minutes)
+      .padStart(2, "0")
+
+    +
+
+    ":"
+
+    +
+
+    String(secs)
+      .padStart(2, "0")
+
   );
 
 }
@@ -2311,6 +2429,13 @@ function formatWorkoutTime(seconds) {
 ================================= */
 
 function speak(text) {
+
+  if (!window.workout.voiceEnabled) {
+
+    return;
+
+  }
+
 
   if (
     !("speechSynthesis" in window)
@@ -2340,131 +2465,6 @@ function speak(text) {
   window.speechSynthesis.speak(
     speech
   );
-
-}
-
-/* =================================
-   SESSION TIMER
-================================= */
-
-function startSessionTimer() {
-
-  stopSessionTimer();
-
-  window.workout.sessionSeconds = 0;
-
-  updateSessionTimer();
-
-
-  window.workout.sessionTimer =
-    setInterval(function() {
-
-      window.workout.sessionSeconds++;
-
-      updateSessionTimer();
-
-    }, 1000);
-
-}
-
-
-function updateSessionTimer() {
-
-  const element =
-    document.getElementById(
-      "sessionTimer"
-    );
-
-
-  if (!element) return;
-
-
-  element.innerText =
-    formatWorkoutTime(
-      window.workout.sessionSeconds
-    );
-
-}
-
-
-function stopSessionTimer() {
-
-  if (
-    window.workout.sessionTimer
-  ) {
-
-    clearInterval(
-      window.workout.sessionTimer
-    );
-
-    window.workout.sessionTimer =
-      null;
-
-  }
-
-}
-
-
-/* =================================
-   SKIP CURRENT ITEM
-================================= */
-
-function skipWorkout() {
-
-  stopWorkoutTimer();
-
-
-  const item =
-    window.workout.currentItem;
-
-
-  if (item) {
-
-    speak(
-      item.name + ". Skipped."
-    );
-
-  }
-
-
-  /*
-   * Move immediately to rest.
-   */
-
-  showWorkoutRest();
-
-}
-
-
-/* =================================
-   STOP WORKOUT
-================================= */
-
-function stopWorkout() {
-
-  stopWorkoutTimer();
-
-  stopSessionTimer();
-
-
-  window.workout.stopped =
-    true;
-
-
-  window.workout.currentItem =
-    null;
-
-
-  if (
-    "speechSynthesis" in window
-  ) {
-
-    window.speechSynthesis.cancel();
-
-  }
-
-
-  showPage("home");
 
 }
 
