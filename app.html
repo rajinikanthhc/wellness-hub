@@ -1611,4 +1611,861 @@ window.onload =
 
   };
 
+  /* =================================
+   WORKOUT VARIABLES
+================================= */
+
+window.workout = {
+
+  type: "",
+
+  items: [],
+
+  currentIndex: 0,
+
+  currentItem: null,
+
+  timer: null,
+
+  remaining: 0,
+
+  stopped: false,
+
+  sessionTimer: null,
+
+  sessionSeconds: 0
+
+};
+
+/* =================================
+   START ROUTINE
+================================= */
+
+function startRoutine(type) {
+
+  stopWorkoutTimer();
+
+
+  const runner =
+    type === "yoga"
+      ? google.script.run
+      : google.script.run;
+
+
+  runner
+    .withSuccessHandler(function(list) {
+
+      if (!list || list.length === 0) {
+
+        alert(
+          type === "yoga"
+            ? "No yoga poses available."
+            : "No exercises available."
+        );
+
+        return;
+
+      }
+
+
+      window.workout.type = type;
+
+      /*
+       * Random order.
+       * Each item appears once before
+       * the list starts again.
+       */
+
+      window.workout.items =
+        shuffleWorkoutItems(list);
+
+      window.workout.currentIndex = 0;
+
+      window.workout.currentItem = null;
+
+      window.workout.stopped = false;
+
+      window.workout.sessionSeconds = 0;
+
+      startSessionTimer();
+
+
+      showWorkoutScreen();
+
+      startNextWorkoutItem();
+
+    })
+    .withFailureHandler(function(error) {
+
+      alert(
+        "Unable to start workout.\n" +
+        error.message
+      );
+
+    })[
+      type === "yoga"
+        ? "getYoga"
+        : "getExercises"
+    ]();
+
+}
+
+
+/* =================================
+   RANDOM ORDER
+================================= */
+
+function shuffleWorkoutItems(list) {
+
+  const result =
+    list.slice();
+
+
+  for (
+    let i = result.length - 1;
+    i > 0;
+    i--
+  ) {
+
+    const j =
+      Math.floor(
+        Math.random() * (i + 1)
+      );
+
+
+    const temp =
+      result[i];
+
+    result[i] =
+      result[j];
+
+    result[j] =
+      temp;
+
+  }
+
+
+  return result;
+
+}
+
+
+/* =================================
+   WORKOUT SCREEN
+================================= */
+
+function showWorkoutScreen() {
+
+  const title =
+    window.workout.type === "yoga"
+      ? "🧘 Yoga Workout"
+      : "🏃 Exercise Workout";
+
+
+  document.getElementById("app")
+    .innerHTML = `
+
+      <div class="workoutPage">
+
+        <div class="workoutHeader">
+
+  <button
+    class="backButton"
+    onclick="stopWorkout()">
+
+    ← Stop
+
+  </button>
+
+  <h1>
+    ${title}
+  </h1>
+
+  <div class="sessionTimerDisplay">
+    ⏱ <span id="sessionTimer">00:00</span>
+  </div>
+
+</div>
+
+        <div
+          id="workoutFrame"
+          class="workoutFrame">
+
+        </div>
+
+      </div>
+
+    `;
+
+}
+
+
+/* =================================
+   NEXT ITEM
+================================= */
+
+function startNextWorkoutItem() {
+
+  stopWorkoutTimer();
+
+
+  if (window.workout.stopped) {
+    return;
+  }
+
+
+  /*
+   * When all items are completed,
+   * reshuffle and continue.
+   */
+
+  if (
+    window.workout.currentIndex >=
+    window.workout.items.length
+  ) {
+
+    window.workout.items =
+      shuffleWorkoutItems(
+        window.workout.items
+      );
+
+    window.workout.currentIndex = 0;
+
+  }
+
+
+  const item =
+    window.workout.items[
+      window.workout.currentIndex
+    ];
+
+
+  window.workout.currentItem =
+    item;
+
+
+  const seconds =
+    parseWorkoutDuration(
+      item.duration
+    );
+
+
+  window.workout.remaining =
+    seconds;
+
+
+  renderWorkoutItem(
+    item,
+    seconds
+  );
+
+
+  speak(
+    item.name + ". Start."
+  );
+
+
+  window.workout.timer =
+    setInterval(function() {
+
+      window.workout.remaining--;
+
+      updateWorkoutTimer();
+
+
+      if (
+        window.workout.remaining <= 0
+      ) {
+
+        finishWorkoutItem();
+
+      }
+
+    }, 1000);
+
+}
+
+
+/* =================================
+   DISPLAY ITEM
+================================= */
+
+function renderWorkoutItem(item, seconds) {
+
+  const frame =
+    document.getElementById(
+      "workoutFrame"
+    );
+
+
+  if (!frame) return;
+
+
+  let imageHTML;
+
+
+  if (item.image) {
+
+    imageHTML = `
+
+      <img
+        class="workoutImage"
+        src="${escapeHtml(item.image)}"
+        alt="${escapeHtml(item.name)}"
+      >
+
+    `;
+
+  } else {
+
+    imageHTML = `
+
+      <div class="workoutEmoji">
+
+        ${
+          window.workout.type === "yoga"
+            ? "🧘"
+            : "🏃"
+        }
+
+      </div>
+
+    `;
+
+  }
+
+
+  frame.innerHTML = `
+
+    ${imageHTML}
+
+
+    <h2 class="workoutName">
+
+      ${escapeHtml(item.name)}
+
+    </h2>
+
+
+    <div
+      class="workoutStatus"
+      id="workoutStatus">
+
+      START
+
+    </div>
+
+
+    <div
+      class="workoutTimer"
+      id="workoutTimer">
+
+      ${formatWorkoutTime(seconds)}
+
+    </div>
+
+
+    <div class="workoutProgress">
+
+  ${
+    window.workout.currentIndex + 1
+  }
+
+  /
+
+  ${
+    window.workout.items.length
+  }
+
+</div>
+
+
+<div class="workoutActionButtons">
+
+  <button
+    class="skipWorkoutButton"
+    onclick="skipWorkout()">
+
+    ⏭ SKIP
+
+  </button>
+
+
+  <button
+    class="stopWorkoutButton"
+    onclick="stopWorkout()">
+
+    ■ STOP
+
+  </button>
+
+</div>
+
+  `;
+
+}
+
+
+/* =================================
+   UPDATE TIMER
+================================= */
+
+function updateWorkoutTimer() {
+
+  const timer =
+    document.getElementById(
+      "workoutTimer"
+    );
+
+
+  if (timer) {
+
+    timer.innerText =
+      formatWorkoutTime(
+        window.workout.remaining
+      );
+
+  }
+
+}
+
+
+/* =================================
+   FINISH ITEM
+================================= */
+
+function finishWorkoutItem() {
+
+  stopWorkoutTimer();
+
+
+  const item =
+    window.workout.currentItem;
+
+
+  if (!item) return;
+
+
+  const status =
+    document.getElementById(
+      "workoutStatus"
+    );
+
+
+  if (status) {
+
+    status.innerText =
+      "FINISHED";
+
+  }
+
+
+  speak(
+    item.name + ". Finished."
+  );
+
+
+  /*
+   * 10 second rest
+   */
+
+  showWorkoutRest();
+
+}
+
+
+/* =================================
+   REST
+================================= */
+
+function showWorkoutRest() {
+
+  if (window.workout.stopped) {
+    return;
+  }
+
+
+  let seconds = 10;
+
+
+  const frame =
+    document.getElementById(
+      "workoutFrame"
+    );
+
+
+  if (!frame) return;
+
+
+  frame.innerHTML = `
+
+    <div class="restScreen">
+
+      <div class="restIcon">
+        🌿
+      </div>
+
+
+      <h2>
+        Rest
+      </h2>
+
+
+      <p>
+        Get ready for the next one
+      </p>
+
+
+      <div
+        id="restTimer"
+        class="restTimer">
+
+        10
+
+      </div>
+
+
+      <button
+        class="stopWorkoutButton"
+        onclick="stopWorkout()">
+
+        ■ STOP
+
+      </button>
+
+    </div>
+
+  `;
+
+
+  speak(
+    "Rest for 10 seconds."
+  );
+
+
+  window.workout.timer =
+    setInterval(function() {
+
+      seconds--;
+
+
+      const timer =
+        document.getElementById(
+          "restTimer"
+        );
+
+
+      if (timer) {
+
+        timer.innerText =
+          seconds;
+
+      }
+
+
+      if (seconds <= 0) {
+
+        stopWorkoutTimer();
+
+
+        window.workout.currentIndex++;
+
+
+        startNextWorkoutItem();
+
+      }
+
+    }, 1000);
+
+}
+
+
+/* =================================
+   STOP
+================================= */
+
+function stopWorkout() {
+
+  stopWorkoutTimer();
+
+
+  window.workout.stopped =
+    true;
+
+
+  window.workout.currentItem =
+    null;
+
+
+  if (
+    "speechSynthesis" in window
+  ) {
+
+    window.speechSynthesis.cancel();
+
+  }
+
+
+  showPage("home");
+
+}
+
+
+/* =================================
+   STOP TIMER
+================================= */
+
+function stopWorkoutTimer() {
+
+  if (window.workout.timer) {
+
+    clearInterval(
+      window.workout.timer
+    );
+
+    window.workout.timer =
+      null;
+
+  }
+
+}
+
+
+/* =================================
+   DURATION
+================================= */
+
+function parseWorkoutDuration(value) {
+
+  const text =
+    String(value || "")
+      .toLowerCase()
+      .trim();
+
+
+  const number =
+    parseFloat(text);
+
+
+  if (
+    !number ||
+    number <= 0
+  ) {
+
+    return 30;
+
+  }
+
+
+  if (
+    text.includes("min") ||
+    text.includes("minute")
+  ) {
+
+    return Math.round(
+      number * 60
+    );
+
+  }
+
+
+  return Math.round(number);
+
+}
+
+
+/* =================================
+   FORMAT TIME
+================================= */
+
+function formatWorkoutTime(seconds) {
+
+  seconds =
+    Math.max(
+      0,
+      Number(seconds) || 0
+    );
+
+
+  const minutes =
+    Math.floor(
+      seconds / 60
+    );
+
+
+  const secs =
+    seconds % 60;
+
+
+  return (
+    String(minutes).padStart(2, "0") +
+    ":" +
+    String(secs).padStart(2, "0")
+  );
+
+}
+
+
+/* =================================
+   VOICE
+================================= */
+
+function speak(text) {
+
+  if (
+    !("speechSynthesis" in window)
+  ) {
+
+    return;
+
+  }
+
+
+  window.speechSynthesis.cancel();
+
+
+  const speech =
+    new SpeechSynthesisUtterance(
+      text
+    );
+
+
+  speech.rate = 0.9;
+
+  speech.pitch = 1;
+
+  speech.volume = 1;
+
+
+  window.speechSynthesis.speak(
+    speech
+  );
+
+}
+
+/* =================================
+   SESSION TIMER
+================================= */
+
+function startSessionTimer() {
+
+  stopSessionTimer();
+
+  window.workout.sessionSeconds = 0;
+
+  updateSessionTimer();
+
+
+  window.workout.sessionTimer =
+    setInterval(function() {
+
+      window.workout.sessionSeconds++;
+
+      updateSessionTimer();
+
+    }, 1000);
+
+}
+
+
+function updateSessionTimer() {
+
+  const element =
+    document.getElementById(
+      "sessionTimer"
+    );
+
+
+  if (!element) return;
+
+
+  element.innerText =
+    formatWorkoutTime(
+      window.workout.sessionSeconds
+    );
+
+}
+
+
+function stopSessionTimer() {
+
+  if (
+    window.workout.sessionTimer
+  ) {
+
+    clearInterval(
+      window.workout.sessionTimer
+    );
+
+    window.workout.sessionTimer =
+      null;
+
+  }
+
+}
+
+
+/* =================================
+   SKIP CURRENT ITEM
+================================= */
+
+function skipWorkout() {
+
+  stopWorkoutTimer();
+
+
+  const item =
+    window.workout.currentItem;
+
+
+  if (item) {
+
+    speak(
+      item.name + ". Skipped."
+    );
+
+  }
+
+
+  /*
+   * Move immediately to rest.
+   */
+
+  showWorkoutRest();
+
+}
+
+
+/* =================================
+   STOP WORKOUT
+================================= */
+
+function stopWorkout() {
+
+  stopWorkoutTimer();
+
+  stopSessionTimer();
+
+
+  window.workout.stopped =
+    true;
+
+
+  window.workout.currentItem =
+    null;
+
+
+  if (
+    "speechSynthesis" in window
+  ) {
+
+    window.speechSynthesis.cancel();
+
+  }
+
+
+  showPage("home");
+
+}
+
 </script>

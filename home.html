@@ -2,31 +2,23 @@
 
   <div class="homeHeader">
 
-    <div class="logo">
-      🌿
-    </div>
+    <div class="logo">🌿</div>
 
-    <h1>
-      Wellness Hub
-    </h1>
+    <h1>Wellness Hub</h1>
 
-    <p>
-      Your Personal Yoga & Exercise Companion
-    </p>
+    <p>Your Personal Yoga & Exercise Companion</p>
 
   </div>
 
 
   <div class="homeCards">
 
-    <div
-      class="homeCard"
-      onclick="showPage('yoga')"
-    >
 
-      <div class="cardIcon">
-        🧘
-      </div>
+    <!-- YOGA -->
+
+    <div class="homeCard">
+
+      <div class="cardIcon">🧘</div>
 
       <div class="cardTitle">
         Yoga
@@ -36,17 +28,34 @@
         Explore your yoga poses
       </div>
 
+      <div class="homeCardButtons">
+
+        <button
+          class="viewButton"
+          onclick="showPage('yoga')">
+
+          View Yoga
+
+        </button>
+
+        <button
+          class="routineButton"
+          onclick="startRoutine('yoga')">
+
+          ▶ Start
+
+        </button>
+
+      </div>
+
     </div>
 
 
-    <div
-      class="homeCard"
-      onclick="showPage('exercise')"
-    >
+    <!-- EXERCISE -->
 
-      <div class="cardIcon">
-        🏃
-      </div>
+    <div class="homeCard">
+
+      <div class="cardIcon">🏃</div>
 
       <div class="cardTitle">
         Exercise
@@ -56,7 +65,28 @@
         Explore your exercises
       </div>
 
+      <div class="homeCardButtons">
+
+        <button
+          class="viewButton"
+          onclick="showPage('exercise')">
+
+          View Exercise
+
+        </button>
+
+        <button
+          class="routineButton"
+          onclick="startRoutine('exercise')">
+
+          ▶ Start
+
+        </button>
+
+      </div>
+
     </div>
+
 
   </div>
 
