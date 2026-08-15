@@ -44,16 +44,70 @@ window.workout = {
    SHOW PAGE
 ================================= */
 
+
 function showPage(page) {
+
+  /* =================================
+     PAGE HTML CACHE
+  ================================= */
+
+  if (!window.pageCache) {
+    window.pageCache = {};
+  }
+
+
+  /* =================================
+     USE CACHED PAGE
+  ================================= */
+
+  if (window.pageCache[page]) {
+
+    document.getElementById("app")
+      .innerHTML =
+        window.pageCache[page];
+
+
+    if (page === "yoga") {
+
+      renderYogaList(
+        window.currentYoga || []
+      );
+
+    }
+
+
+    if (page === "exercise") {
+
+      renderExerciseList(
+        window.currentExercises || []
+      );
+
+    }
+
+
+    return;
+
+  }
+
+
+  /* =================================
+     FIRST TIME LOAD
+  ================================= */
 
   google.script.run
 
     .withSuccessHandler(function(html) {
 
+      /* Save page HTML in browser */
+      window.pageCache[page] = html;
+
+
+      /* Show page immediately */
       document.getElementById("app")
         .innerHTML = html;
 
 
+      /* Load data only first time */
       if (page === "yoga") {
 
         loadYoga();
@@ -83,7 +137,6 @@ function showPage(page) {
     .include(page);
 
 }
-
 
 /* =================================
    LOAD YOGA
@@ -1410,8 +1463,102 @@ window.onload =
 
     showPage("home");
 
+
+    /* =================================
+       PRELOAD YOGA & EXERCISE
+       IN BACKGROUND
+    ================================= */
+
+    setTimeout(function() {
+
+      preloadWellnessPages();
+
+    }, 300);
+
   };
 
+
+/* =================================
+   PRELOAD WELLNESS PAGES
+================================= */
+
+function preloadWellnessPages() {
+
+  if (!window.pageCache) {
+
+    window.pageCache = {};
+
+  }
+
+
+  /* ================================
+     PRELOAD YOGA PAGE
+  ================================= */
+
+  google.script.run
+
+    .withSuccessHandler(function(html) {
+
+      window.pageCache["yoga"] =
+        html;
+
+
+      google.script.run
+
+        .withSuccessHandler(function(list) {
+
+          window.currentYoga =
+            list || [];
+
+        })
+
+        .getYoga();
+
+    })
+
+    .withFailureHandler(function() {
+
+      /* Ignore background preload errors */
+
+    })
+
+    .include("yoga");
+
+
+  /* ================================
+     PRELOAD EXERCISE PAGE
+  ================================= */
+
+  google.script.run
+
+    .withSuccessHandler(function(html) {
+
+      window.pageCache["exercise"] =
+        html;
+
+
+      google.script.run
+
+        .withSuccessHandler(function(list) {
+
+          window.currentExercises =
+            list || [];
+
+        })
+
+        .getExercises();
+
+    })
+
+    .withFailureHandler(function() {
+
+      /* Ignore background preload errors */
+
+    })
+
+    .include("exercise");
+
+}
 
 /* =================================
    START ROUTINE
