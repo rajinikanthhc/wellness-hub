@@ -117,13 +117,22 @@ function getItems_(type) {
   }
 
 
+  /* ================================
+     READ:
+     ID
+     Name
+     Duration
+     Image
+     Notes
+  ================================= */
+
   const data =
     sheet
       .getRange(
         2,
         1,
         lastRow - 1,
-        4
+        5
       )
       .getValues();
 
@@ -150,23 +159,32 @@ function getItems_(type) {
         String(row[2] || "");
 
 
-      /*
-         Sheet stores ONLY filename.
-         But old rows may contain a URL.
-         We support both.
-      */
-
-      let image =
-        String(row[3] || "").trim();
+      const imageName =
+        String(row[3] || "")
+          .trim();
 
 
-      if (image) {
+      const notes =
+        String(row[4] || "")
+          .trim();
 
-        image =
-          getImageUrl_(
-            type,
-            image
-          );
+
+      let imageUrl = "";
+
+
+      if (imageName) {
+
+        imageUrl =
+          "https://raw.githubusercontent.com/" +
+          GITHUB_OWNER +
+          "/" +
+          GITHUB_REPO +
+          "/" +
+          GITHUB_BRANCH +
+          "/" +
+          getGitHubFolder_(type) +
+          "/" +
+          encodeURIComponent(imageName);
 
       }
 
@@ -179,11 +197,27 @@ function getItems_(type) {
 
         duration: duration,
 
-        image: image
+        image: imageUrl,
+
+        imageName: imageName,
+
+        notes: notes
 
       };
 
     });
+
+}
+
+/* =================================
+   GITHUB FOLDER
+================================= */
+
+function getGitHubFolder_(type) {
+
+  return type === "yoga"
+    ? "yoga"
+    : "exercise";
 
 }
 
@@ -294,16 +328,12 @@ function addItem(
 
 
   sheet.appendRow([
-
-    id,
-
-    item.name,
-
-    item.duration || "",
-
-    imageName
-
-  ]);
+  id,
+  item.name,
+  item.duration || "",
+  imageName,
+  item.notes || ""
+]);
 
 
   return id;
@@ -1035,5 +1065,17 @@ function getExtensionFromMime_(
     map[mimeType] ||
     ".jpg"
   );
+
+}
+
+/* =================================
+   OPEN GOOGLE SHEET
+================================= */
+
+function getSpreadsheetUrl() {
+
+  return SpreadsheetApp
+    .getActiveSpreadsheet()
+    .getUrl();
 
 }
